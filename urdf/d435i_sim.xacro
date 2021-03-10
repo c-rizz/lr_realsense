@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="d435i">
+<!--
+  <xacro:arg name="name"/>
+  <xacro:arg name="static"/>
+  <xacro:arg name="label_format"/>
+  <xacro:arg name="topics_ns"/>
+  <xacro:arg name="enable_gravity"/>
+  <xacro:arg name="color_width"/>
+  <xacro:arg name="color_height"/>
+  <xacro:arg name="color_fps"/>
+  <xacro:arg name="enable_color"/>
+  <xacro:arg name="enable_label"/>
+  <xacro:arg name="infra_width"/>
+  <xacro:arg name="infra_height"/>
+  <xacro:arg name="infra_fps"/>
+  <xacro:arg name="enable_infra1"/>
+  <xacro:arg name="enable_infra2"/>
+  <xacro:arg name="depth_width"/>
+  <xacro:arg name="depth_height"/>
+  <xacro:arg name="depth_fps"/>
+  <xacro:arg name="enable_depth"/>
+  <xacro:arg name="enable_gyro"/>
+  <xacro:arg name="enable_accel"/>
+  <xacro:arg name="gyro_fps"/>
+-->
+
+  <xacro:macro name="d435i_sim"
+               params="label_format static enable_label enable_accel enable_gyro accel_fps gyro_fps enable_color enable_infra1 enable_infra2
+                       enable_depth color_width color_height color_fps infra_width infra_height infra_fps depth_width depth_height depth_fps
+                       enable_gravity name:=camera topics_ns:=camera parent *origin">
+
+    <xacro:include filename="$(find lr_realsense)/urdf/d435i_gazebo.xacro" />
+    <xacro:include filename="$(find lr_realsense)/urdf/d435i_structure.xacro" />
+
+
+    <xacro:d435i_structure  parent="${parent}"
+                            name="${name}">
+      <xacro:insert_block name="origin"/>
+    </xacro:d435i_structure>
+
+
+    <xacro:d435i_gazebo
+      static="${static}"
+      label_format="${label_format}"
+      camera_name="${name}"
+      reference_link="${name}_link"
+      topics_ns="${topics_ns}"
+      enable_gravity="${enable_gravity}"
+      depth_camera="depth"
+      color_camera="color"
+      label_camera="label"
+      color_width="${color_width}"
+      color_height="${color_height}"
+      color_fps="${color_fps}"
+      enable_color="${enable_color}"
+      enable_label="${enable_label}"
+      infra_width="${infra_width}"
+      infra_height="${infra_height}"
+      infra_fps="${infra_fps}"
+      enable_infra1="${enable_infra1}"
+      enable_infra2="${enable_infra2}"
+      depth_width="${depth_width}"
+      depth_height="${depth_height}"
+      depth_fps="${depth_fps}"
+      enable_depth="${enable_depth}"
+      enable_imu="${enable_gyro and enable_accel}"
+      imu_fps="${gyro_fps}"
+      infrared1_camera="infra1"
+      infrared2_camera="infra2"
+      depth_optical_frame="${name}_depth_optical_frame"
+      color_optical_frame="${name}_color_optical_frame"
+      infrared1_optical_frame="${name}_left_ir_optical_frame"
+      infrared2_optical_frame="${name}_right_ir_optical_frame"/>
+  </xacro:macro>
+</robot>

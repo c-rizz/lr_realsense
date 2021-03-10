@@ -1,0 +1,293 @@
+<?xml version="1.0"?>
+
+<!--
+License: Apache 2.0. See LICENSE file in root directory.
+Copyright(c) 2017 PAL Robotics, S.L. All Rights Reserved
+
+This file defines a gazebo sensor to simulate a realsense in gazebo.
+The sensor is defiend as a xacro macro which you can use in xacro urdf files
+-->
+
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <xacro:macro name="d435i_gazebo"
+                 params="label_format static enable_label enable_imu imu_fps enable_color enable_infra1 enable_infra2 enable_depth
+                 color_width color_height color_fps infra_width infra_height infra_fps depth_width depth_height depth_fps enable_gravity
+                 camera_name label_camera color_camera infrared1_camera infrared2_camera depth_camera reference_link topics_ns
+                  depth_optical_frame color_optical_frame infrared1_optical_frame infrared2_optical_frame">
+
+        <!-- Load parameters to model's main link-->
+        <xacro:property name="deg_to_rad" value="0.01745329251994329577"/>
+
+        <xacro:if value="${static}">
+            <gazebo>
+                <static>true</static>
+            </gazebo>
+        </xacro:if>
+
+        <gazebo reference="${reference_link}">
+            <self_collide>0</self_collide>
+            <enable_wind>0</enable_wind>
+            <kinematic>0</kinematic>
+
+            <!--<mu>1</mu>-->
+            <mu2>1</mu2>
+            <fdir1>0 0 0</fdir1>
+            <!--<slip1>0</slip1>
+            <slip2>0</slip2>-->
+            <kp>1e+13</kp>
+            <kd>1</kd>
+            <!--<max_vel>0.01</max_vel>
+            <min_depth>0</min_depth>-->
+            <xacro:if value="${enable_label}">
+                <sensor name="${camera_name}_${label_camera}" type="label">
+                    <camera name="${camera_name}">
+                        <horizontal_fov>${69.4*deg_to_rad}</horizontal_fov>
+                        <image>
+                            <width>${color_width}</width>
+                            <height>${color_height}</height>
+                            <format>LABEL_${label_format}</format>
+                        </image>
+                        <clip>
+                            <near>0.1</near>
+                            <far>100</far>
+                        </clip>
+                    </camera>
+                    <plugin name="${camera_name}/${label_camera}_controller" filename="libgazebo_ros_label_camera.so">
+                        <cameraName>${camera_name}/${label_camera}</cameraName>
+                        <frameName>${color_optical_frame}</frameName>
+                    </plugin>
+                    <always_on>true</always_on>
+                    <update_rate>${color_fps}</update_rate>
+                </sensor>
+            </xacro:if>
+            <xacro:if value="${enable_imu}">
+                <sensor name="${camera_name}_imu" type="imu">
+                    <always_on>true</always_on>
+                    <update_rate>${imu_fps}</update_rate>
+                    <visualize>true</visualize>
+                    <topic>__default_topic__</topic>
+                    <imu>
+                        <angular_velocity>
+                            <x>
+                                <noise type="gaussian">
+                                    <mean>0</mean>
+                                    <stddev>0.0002</stddev>
+                                    <bias_mean>7.5e-06</bias_mean>
+                                    <bias_stddev>8e-07</bias_stddev>
+                                </noise>
+                            </x>
+                            <y>
+                                <noise type="gaussian">
+                                    <mean>0</mean>
+                                    <stddev>0.0002</stddev>
+                                    <bias_mean>7.5e-06</bias_mean>
+                                    <bias_stddev>8e-07</bias_stddev>
+                                </noise>
+                            </y>
+                            <z>
+                                <noise type="gaussian">
+                                    <mean>0</mean>
+                                    <stddev>0.0002</stddev>
+                                    <bias_mean>7.5e-06</bias_mean>
+                                    <bias_stddev>8e-07</bias_stddev>
+                                </noise>
+                            </z>
+                        </angular_velocity>
+
+                        <linear_acceleration>
+                            <x>
+                                <noise type="gaussian">
+                                    <mean>0</mean>
+                                    <stddev>0.017</stddev>
+                                    <bias_mean>0.1</bias_mean>
+                                    <bias_stddev>0.001</bias_stddev>
+                                </noise>
+                            </x>
+                            <y>
+                                <noise type="gaussian">
+                                    <mean>0</mean>
+                                    <stddev>0.017</stddev>
+                                    <bias_mean>0.1</bias_mean>
+                                    <bias_stddev>0.001</bias_stddev>
+                                </noise>
+                            </y>
+                            <z>
+                                <noise type="gaussian">
+                                    <mean>0</mean>
+                                    <stddev>0.017</stddev>
+                                    <bias_mean>0.1</bias_mean>
+                                    <bias_stddev>0.001</bias_stddev>
+                                </noise>
+                            </z>
+                        </linear_acceleration>
+                    </imu>
+                    <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+                        <topicName>${camera_name}/imu</topicName>
+                        <bodyName>${reference_link}</bodyName>
+                        <updateRateHZ>${imu_fps}</updateRateHZ>
+                         <!-- noise is handled in gazebo sensor (imu section) -->
+                        <gaussianNoise>0</gaussianNoise>
+                        <xyzOffset>0 0 0</xyzOffset>
+                        <rpyOffset>0 0 0</rpyOffset>
+                        <frameName>${reference_link}</frameName>
+                        <initialOrientationAsReference>false</initialOrientationAsReference>
+                    </plugin>
+                    <pose>0 0 0 0 0 0</pose>
+                </sensor>
+            </xacro:if>
+
+            <xacro:if value="${enable_color}">
+                <sensor name="${camera_name}_${color_camera}" type="camera">
+                    <camera name="${camera_name}">
+                        <horizontal_fov>${69.4*deg_to_rad}</horizontal_fov>
+                        <image>
+                            <width>${color_width}</width>
+                            <height>${color_height}</height>
+                            <format>RGB_INT8</format>
+                        </image>
+                        <clip>
+                            <near>0.1</near>
+                            <far>100</far>
+                        </clip>
+                        <noise>
+                            <type>gaussian</type>
+                            <mean>0.0</mean>
+                            <stddev>0.007</stddev>
+                        </noise>
+                    </camera>
+                    <plugin name="${camera_name}/${color_camera}_controller" filename="libgazebo_ros_camera.so">
+                        <cameraName>${camera_name}/${color_camera}</cameraName>
+                        <frameName>${color_optical_frame}</frameName>
+                        <updateRate>${color_fps}</updateRate>
+                    </plugin>
+                    <always_on>true</always_on>
+                    <update_rate>${color_fps}</update_rate>
+                    <visualize>0</visualize>
+                </sensor>
+            </xacro:if>
+
+            <xacro:if value="${enable_infra1}">
+                <sensor name="${camera_name}_${infrared1_camera}" type="camera">
+                    <camera name="${camera_name}">
+                        <horizontal_fov>${85.2*deg_to_rad}</horizontal_fov>
+                        <image>
+                            <width>${infra_width}</width>
+                            <height>${infra_height}</height>
+                            <format>L_INT8</format>
+                        </image>
+                        <clip>
+                            <near>0.1</near>
+                            <far>100</far>
+                        </clip>
+                        <noise>
+                            <type>gaussian</type>
+                            <mean>0.0</mean>
+                            <stddev>0.05</stddev>
+                        </noise>
+                    </camera>
+                    <plugin name="${camera_name}/${infrared1_camera}_controller" filename="libgazebo_ros_camera.so">
+                        <cameraName>${camera_name}/${infrared1_camera}</cameraName>
+                        <frameName>${infrared1_optical_frame}</frameName>
+                        <imageTopicName>image_rect_raw</imageTopicName>
+                        <updateRate>${infra_fps}</updateRate>
+                    </plugin>
+                    <always_on>true</always_on>
+                    <update_rate>${infra_fps}</update_rate>
+                    <visualize>0</visualize>
+                </sensor>
+            </xacro:if>
+
+            <xacro:if value="${enable_infra2}">
+                <sensor name="${camera_name}_${infrared2_camera}" type="camera">
+                    <camera name="${camera_name}">
+                        <horizontal_fov>${85.2*deg_to_rad}</horizontal_fov>
+                        <image>
+                            <width>${infra_width}</width>
+                            <height>${infra_height}</height>
+                            <format>L_INT8</format>
+                        </image>
+                        <clip>
+                            <near>0.1</near>
+                            <far>100</far>
+                        </clip>
+                        <noise>
+                            <type>gaussian</type>
+                            <mean>0.0</mean>
+                            <stddev>0.05</stddev>
+                        </noise>
+                    </camera>
+                    <plugin name="${camera_name}/${infrared2_camera}_controller" filename="libgazebo_ros_camera.so">
+                        <cameraName>${camera_name}/${infrared2_camera}</cameraName>
+                        <frameName>${infrared2_optical_frame}</frameName>
+                        <imageTopicName>image_rect_raw</imageTopicName>
+                        <updateRate>${infra_fps}</updateRate>
+                    </plugin>
+                    <always_on>${enable_infra2}</always_on>
+                    <update_rate>${infra_fps}</update_rate>
+                    <visualize>0</visualize>
+                </sensor>
+            </xacro:if>
+
+            <xacro:if value="${enable_depth}">
+                <sensor name="${camera_name}_${depth_camera}" type="depth">
+                    <camera name="${camera_name}">
+                        <horizontal_fov>${85.2*deg_to_rad}</horizontal_fov>
+                        <image>
+                            <width>${depth_width}</width>
+                            <height>${depth_height}</height>
+                        </image>
+                        <clip>
+                            <near>0.1</near>
+                            <far>10</far>
+                        </clip>
+                        <noise>
+                            <type>gaussian</type>
+                            <mean>0.0</mean>
+                            <stddev>0.100</stddev>
+                        </noise>
+                        <depth_camera>
+                            <output>depth</output>
+                        </depth_camera>
+
+                    </camera>
+                    <always_on>${enable_depth}</always_on>
+                    <update_rate>${depth_fps}</update_rate>
+                    <plugin name="${camera_name}/${depth_camera}_controller" filename="libgazebo_ros_depth_camera.so">
+                         <updateRate>${depth_fps}</updateRate>
+                         <cameraName>${camera_name}/${depth_camera}</cameraName>
+                         <frameName>${depth_optical_frame}</frameName>
+                         <imageTopicName>color/image_raw</imageTopicName>
+                         <depthImageTopicName>image_rect_raw</depthImageTopicName>
+                         <pointCloudTopicName>color/points</pointCloudTopicName>
+                         <depthImageCameraInfoTopicName>camera_info</depthImageCameraInfoTopicName>
+                         <pointCloudCutoff>0.1</pointCloudCutoff>
+                   </plugin>
+
+                    <!--
+                      triggerTopicName
+                      borderCrop
+                      autoDistortion
+                      distortionT2
+                      distortionT1
+                      distortionK3
+                      distortionK2
+                      distortionK1
+                      hackBaseline
+                      focalLength
+                      Cy
+                      Cx
+                      CxPrime
+                    -->
+                    <!--      <hackBaseline>0</hackBaseline>
+                       <focalLength>320.000101</focalLength>
+                       <distortionK1>0.0</distortionK1>
+                       <distortionK2>0.0</distortionK2>
+                       <distortionK3>0.0</distortionK3>
+                       <distortionT1>0.0</distortionT1>
+                       <distortionT2>0.0</distortionT2>-->
+                </sensor>
+            </xacro:if>
+        </gazebo>
+    </xacro:macro>
+</robot>
