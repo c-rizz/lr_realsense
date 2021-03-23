@@ -53,7 +53,9 @@
   <depend>rospy</depend>
   <depend>std_msgs</depend>
 
+  <depend>realsense2_camera</depend>
   <depend>realsense2_description</depend>
+  <exec_depend>depth_image_proc</exec_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

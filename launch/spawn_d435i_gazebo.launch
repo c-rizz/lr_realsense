@@ -1,35 +1,36 @@
 <launch>
 
-    <arg name="name" default="d435i"/>
+    <arg name="camera_name" default="d435i"/>
     <arg name="static" default="false"/>
     <arg name="label_format" default="UINT8"/>
-    <arg name="topics_ns" default="d435i"/>
-    <arg name="enable_gravity" default="true"/>
-    <arg name="color_width" default="1920"/>
-    <arg name="color_height" default="1080"/>
+    <arg name="topics_ns" default="$(arg camera_name)"/>
+    <arg name="color_width" default="1280"/>
+    <arg name="color_height" default="720"/>
     <arg name="color_fps" default="30"/>
-    <arg name="enable_color" default="true"/>
-    <arg name="enable_label" default="false"/>
-    <arg name="infra_width" default="1280"/>
-    <arg name="infra_height" default="720"/>
+    <arg name="infra_width" default="640"/>
+    <arg name="infra_height" default="480"/>
     <arg name="infra_fps" default="30"/>
-    <arg name="enable_infra1" default="true"/>
-    <arg name="enable_infra2" default="true"/>
-    <arg name="depth_width" default="1280"/>
-    <arg name="depth_height" default="720"/>
+    <arg name="depth_width" default="640"/>
+    <arg name="depth_height" default="480"/>
     <arg name="depth_fps" default="30"/>
-    <arg name="enable_depth" default="true"/>
-    <arg name="enable_gyro" default="true"/>
-    <arg name="enable_accel" default="true"/>
     <arg name="gyro_fps" default="400"/>
     <arg name="accel_fps" default="400"/>
 
-    <node name="spawn_$(arg name)" pkg="gazebo_ros" type="spawn_model"
-          args="-param $(arg name)_description -urdf -model $(arg name)" />
+    <arg name="enable_depth" default="true"/>
+    <arg name="enable_color" default="true"/>
+    <arg name="enable_gravity" default="true"/>
+    <arg name="enable_label" default="false"/>
+    <arg name="enable_gyro" default="false"/>
+    <arg name="enable_accel" default="false"/>
+    <arg name="enable_infra1" default="false"/>
+    <arg name="enable_infra2" default="false"/>
 
-    <param name="$(arg name)_description"
+    <node name="spawn_$(arg camera_name)" pkg="gazebo_ros" type="spawn_model"
+          args="-param $(arg camera_name)_description -urdf -model $(arg camera_name)" />
+
+    <param name="$(arg camera_name)_description"
            command="$(find xacro)/xacro '$(find lr_realsense)/urdf/d435i_sim.urdf.xacro'
-                     name:=$(arg name)
+                     name:=$(arg camera_name)
                      static:=$(arg static)
                      label_format:=$(arg label_format)
                      topics_ns:=$(arg topics_ns)
@@ -55,6 +56,35 @@
                      parent_link:=world" />
 
 
+    <node pkg="nodelet" type="nodelet" name="depth_registration_nodelet_manager" args="manager" />
+    <node pkg="nodelet" type="nodelet" name="depth_registration_nodelet"
+          args="load depth_image_proc/register depth_registration_nodelet_manager">
+        <remap from="depth/camera_info" to="/$(arg camera_name)/depth/camera_info"/>
+        <remap from="depth/image_rect"  to="/$(arg camera_name)/depth/image_rect_raw"/>
+        <remap from="rgb/camera_info"   to="/$(arg camera_name)/color/camera_info"/>
+        <remap from="depth_registered/camera_info"  to="/$(arg camera_name)/aligned_depth_to_color/camera_info"/>
+        <remap from="depth_registered/image_rect"   to="/$(arg camera_name)/aligned_depth_to_color/image_raw"/>
+    </node>
 
+<!--
+        Resulting topics:
+
+        Same as real:
+        /panda_camera/aligned_depth_to_color/camera_info
+        /panda_camera/aligned_depth_to_color/image_raw
+        /panda_camera/color/camera_info
+        /panda_camera/color/image_raw
+        /panda_camera/depth/camera_info
+        /panda_camera/depth/color/points
+        /panda_camera/depth/image_rect_raw
+
+        Unique to sim:
+        /panda_camera/color/parameter_descriptions
+        /panda_camera/color/parameter_updates
+        /panda_camera/depth/color/image_raw
+        /panda_camera/depth/parameter_descriptions
+        /panda_camera/depth/parameter_updates
+
+-->
 
 </launch>
