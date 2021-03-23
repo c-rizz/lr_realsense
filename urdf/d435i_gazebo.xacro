@@ -232,10 +232,10 @@ The sensor is defiend as a xacro macro which you can use in xacro urdf files
             <xacro:if value="${enable_depth}">
                 <sensor name="${camera_name}_${depth_camera}" type="depth">
                     <camera name="${camera_name}">
-                        <horizontal_fov>${85.2*deg_to_rad}</horizontal_fov>
                         <image>
                             <width>${depth_width}</width>
                             <height>${depth_height}</height>
+                            <format>R8G8B8</format>
                         </image>
                         <clip>
                             <near>0.1</near>
@@ -250,6 +250,58 @@ The sensor is defiend as a xacro macro which you can use in xacro urdf files
                             <output>depth</output>
                         </depth_camera>
 
+                        <distortion>
+                            <k1>0</k1>
+                            <k2>0</k2>
+                            <k3>0</k3>
+                            <p1>0</p1>
+                            <p2>0</p2>
+                            <center>0.5 0.5</center>
+                        </distortion>
+                        <lens>
+                            <!-- Values taken from a real d435-->
+                            <xacro:if value="${(depth_width == 1280 and depth_height==720) or
+                                              (depth_width == 640  and depth_height==360) or
+                                              (depth_width == 480  and depth_height==270) or
+                                              (depth_width == 256  and depth_height==144)}">
+                                <intrinsics>
+                                    <fx>${644.6159 * depth_width/1280}</fx>
+                                    <fy>${644.6159 * depth_height/720}</fy>
+                                    <cx>${644.6836 * depth_width/1280}</cx>
+                                    <cy>${355.5105 * depth_height/720}</cy>
+                                    <s>0</s>
+                                </intrinsics>
+                            </xacro:if>
+                            <xacro:if value="${(depth_width == 848  and depth_height==480) or
+                                               (depth_width == 424  and depth_height==240)}">
+                                <intrinsics>
+                                    <fx>${427.058 * depth_width/848}</fx>
+                                    <fy>${427.058 * depth_height/848}</fy>
+                                    <cx>${427.102 * depth_width/848}</cx>
+                                    <cy>${237.025 * depth_height/480}</cy>
+                                    <s>0</s>
+                                </intrinsics>
+                            </xacro:if>
+                            <xacro:if value="${(depth_width == 640  and depth_height==480)}">
+                                <intrinsics>
+                                    <fx>386.7696</fx>
+                                    <fy>386.7696</fy>
+                                    <cx>322.8101</cx>
+                                    <cy>237.3063</cy>
+                                    <s>0</s>
+                                </intrinsics>
+                            </xacro:if>
+                            <xacro:if value="${(depth_width == 848  and depth_height==100)}">
+                                <intrinsics>
+                                    <fx>427.0581</fx>
+                                    <fy>427.0581</fy>
+                                    <cx>427.1029</cx>
+                                    <cy>47.0257</cy>
+                                    <s>0</s>
+                                </intrinsics>
+                            </xacro:if>
+                        </lens>
+
                     </camera>
                     <always_on>${enable_depth}</always_on>
                     <update_rate>${depth_fps}</update_rate>
@@ -260,6 +312,7 @@ The sensor is defiend as a xacro macro which you can use in xacro urdf files
                          <imageTopicName>color/image_raw</imageTopicName>
                          <depthImageTopicName>image_rect_raw</depthImageTopicName>
                          <pointCloudTopicName>color/points</pointCloudTopicName>
+                         <cameraInfoTopicName>color/camera_info</cameraInfoTopicName>
                          <depthImageCameraInfoTopicName>camera_info</depthImageCameraInfoTopicName>
                          <pointCloudCutoff>0.1</pointCloudCutoff>
                    </plugin>

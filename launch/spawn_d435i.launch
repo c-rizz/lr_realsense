@@ -1,0 +1,147 @@
+<launch>
+
+    <!-- 
+        Starts up a sim or real realsense camera.
+        By default the camera is not attached to any robot, if you want to attach it to a robot you have to load
+        yourself an appropriate robot_description in the ros parameter server and set load_robot_Desciption to false
+        in this launch file.
+
+        If simulated is true this launch file will spawn the camera in the simulator and launch the necessary nodes.
+        If simulated is false this launch file will just start up the realsense publisher node.
+        
+    -->
+    <arg name="camera_name" default="d435i"/>
+    <arg name="static" default="true"/>
+    <arg name="topics_ns" default="$(arg camera_name)"/>
+
+    <arg name="color_width" default="1280"/>
+    <arg name="color_height" default="720"/>
+    <arg name="color_fps" default="30"/>
+    <arg name="infra_width" default="640"/>
+    <arg name="infra_height" default="480"/>
+    <arg name="infra_fps" default="30"/>
+    <arg name="depth_width" default="640"/>
+    <arg name="depth_height" default="480"/>
+    <arg name="depth_fps" default="30"/>
+
+    <arg name="label_format" default="UINT8"/>
+    <arg name="gyro_fps" default="400"/>
+    <arg name="accel_fps" default="400"/>
+
+    <arg name="enable_depth" default="true"/>
+    <arg name="enable_color" default="true"/>
+    <arg name="enable_gravity" default="true"/>
+    <arg name="enable_label" default="false"/>
+    <arg name="enable_gyro" default="false"/>
+    <arg name="enable_accel" default="false"/>
+    <arg name="enable_infra1" default="false"/>
+    <arg name="enable_infra2" default="false"/>
+
+    <arg name="load_robot_description" default="true"/>
+    <arg name="simulated" default="false"/>
+
+
+    <group if="$(arg load_robot_description)">
+        <param name="$(arg camera_name)_description"
+            command="$(find xacro)/xacro '$(find lr_realsense)/urdf/d435i_sim.urdf.xacro'
+                        name:=$(arg camera_name)
+                        static:=$(arg static)
+                        label_format:=$(arg label_format)
+                        topics_ns:=$(arg topics_ns)
+                        enable_gravity:=$(arg enable_gravity)
+                        color_width:=$(arg color_width)
+                        color_height:=$(arg color_height)
+                        color_fps:=$(arg color_fps)
+                        enable_color:=$(arg enable_color)
+                        enable_label:=$(arg enable_label)
+                        infra_width:=$(arg infra_width)
+                        infra_height:=$(arg infra_height)
+                        infra_fps:=$(arg infra_fps)
+                        enable_infra1:=$(arg enable_infra1)
+                        enable_infra2:=$(arg enable_infra2)
+                        depth_width:=$(arg depth_width)
+                        depth_height:=$(arg depth_height)
+                        depth_fps:=$(arg depth_fps)
+                        enable_depth:=$(arg enable_depth)
+                        enable_gyro:=$(arg enable_gyro)
+                        enable_accel:=$(arg enable_accel)
+                        gyro_fps:=$(arg gyro_fps)
+                        accel_fps:=$(arg accel_fps)
+                        parent_link:=world" />
+    </group>
+
+    <group if="$(arg simulated)">
+        <!-- spawn camera -->
+        <node name="spawn_$(arg camera_name)" pkg="gazebo_ros" type="spawn_model"
+            args="-param $(arg camera_name)_description -urdf -model $(arg camera_name)" />
+	    <include file="$(find lr_realsense)/launch/sim_realsense_publisher.launch">
+            <arg name="camera_name"            value="$(arg camera_name)"/>
+        </include>
+        <!-- Publish tf for the realsense -->
+        <node name="$(arg camera_name)_robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+            <remap from="robot_description" to="$(arg camera_name)_description"/>
+        </node>
+    </group>
+    <group unless="$(arg simulated)">
+	    <include file="$(find lr_realsense)/launch/real_realsense_publisher.launch">
+            <arg name="camera_name"            value="$(arg camera_name)"/>
+            <arg name="tf_prefix"              value="$(arg camera_name)"/>
+
+            <arg name="color_width"         value="$(arg color_width)"/>
+            <arg name="color_height"        value="$(arg color_height)"/>
+            <arg name="color_fps"           value="$(arg color_fps)"/>
+            <arg name="depth_width"         value="$(arg depth_width)"/>
+            <arg name="depth_height"        value="$(arg depth_height)"/>
+            <arg name="depth_fps"           value="$(arg depth_fps)"/>
+            <arg name="infra_width"         value="$(arg infra_width)"/>
+            <arg name="infra_height"        value="$(arg infra_height)"/>
+            <arg name="infra_fps"           value="$(arg infra_fps)"/>
+        </include>
+    </group>
+
+
+<!--
+        Resulting topics:
+
+        Same in sim and real:
+        /panda_camera/aligned_depth_to_color/camera_info
+        /panda_camera/aligned_depth_to_color/image_raw
+        /panda_camera/color/camera_info
+        /panda_camera/color/image_raw
+        /panda_camera/depth/camera_info
+        /panda_camera/depth/color/points
+        /panda_camera/depth/image_rect_raw
+
+        Unique to sim:
+        /panda_camera/color/parameter_descriptions
+        /panda_camera/color/parameter_updates
+        /panda_camera/depth/color/image_raw
+        /panda_camera/depth/parameter_descriptions
+        /panda_camera/depth/parameter_updates
+
+		Unique to real:
+		/panda_camera/decimation/parameter_descriptions
+		/panda_camera/decimation/parameter_updates
+		/panda_camera/disparity_end/parameter_descriptions
+		/panda_camera/disparity_end/parameter_updates
+		/panda_camera/disparity_start/parameter_descriptions
+		/panda_camera/disparity_start/parameter_updates
+		/panda_camera/extrinsics/depth_to_color
+		/panda_camera/pointcloud/parameter_descriptions
+		/panda_camera/pointcloud/parameter_updates
+		/panda_camera/realsense2_camera_manager/bond
+		/panda_camera/rgb_camera/auto_exposure_roi/parameter_descriptions
+		/panda_camera/rgb_camera/auto_exposure_roi/parameter_updates
+		/panda_camera/rgb_camera/parameter_descriptions
+		/panda_camera/rgb_camera/parameter_updates
+		/panda_camera/spatial/parameter_descriptions
+		/panda_camera/spatial/parameter_updates
+		/panda_camera/stereo_module/auto_exposure_roi/parameter_descriptions
+		/panda_camera/stereo_module/auto_exposure_roi/parameter_updates
+		/panda_camera/stereo_module/parameter_descriptions
+		/panda_camera/stereo_module/parameter_updates
+		/panda_camera/temporal/parameter_descriptions
+		/panda_camera/temporal/parameter_updates
+-->
+
+</launch>

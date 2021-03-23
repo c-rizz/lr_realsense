@@ -1,0 +1,23 @@
+<launch>
+
+    <arg name="camera_name" default="d435i"/>
+
+    <!-- The gazebo-simulated realsense does not publish aligned_depth_to_color, so we do it manually-->
+    <node pkg="nodelet" type="nodelet" name="depth_registration_nodelet_manager" args="manager" />
+    <node pkg="nodelet" type="nodelet" name="depth_registration_nodelet"
+          args="load depth_image_proc/register depth_registration_nodelet_manager">
+        <remap from="depth/camera_info" to="/$(arg camera_name)/depth/camera_info"/>
+        <remap from="depth/image_rect"  to="/$(arg camera_name)/depth/image_rect_raw"/>
+        <remap from="rgb/camera_info"   to="/$(arg camera_name)/color/camera_info"/>
+        <remap from="depth_registered/camera_info"  to="/$(arg camera_name)/aligned_depth_to_color/camera_info"/>
+        <remap from="depth_registered/image_rect"   to="/$(arg camera_name)/aligned_depth_to_color/image_raw"/>
+
+        <remap from="depth_optical_frame"   to="/$(arg camera_name)_depth_optical_frame"/>
+        <remap from="rgb_optical_frame"   to="/$(arg camera_name)_color_optical_frame"/>
+    </node>
+
+    <!-- Due to a gazebo bug the depth camera_info is not being published, so I do it manually (see https://github.com/ros-simulation/gazebo_ros_pkgs/pull/798)-->
+    <node pkg="lr_realsense" type="depth_camera_info_publisher.py" name="depth_camera_info_publisher">
+        <remap from="camera_info"   to="/$(arg camera_name)/depth/camera_info"/>
+    </node>
+</launch>
