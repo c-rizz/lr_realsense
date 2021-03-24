@@ -75,7 +75,9 @@
         <node name="spawn_$(arg camera_name)" pkg="gazebo_ros" type="spawn_model"
             args="-param $(arg camera_name)_description -urdf -model $(arg camera_name)" />
 	    <include file="$(find lr_realsense)/launch/sim_realsense_publisher.launch">
-            <arg name="camera_name"            value="$(arg camera_name)"/>
+            <arg name="camera_name"         value="$(arg camera_name)"/>
+            <arg name="color_width"         value="$(arg color_width)"/>
+            <arg name="color_height"        value="$(arg color_height)"/>
         </include>
         <!-- Publish tf for the realsense -->
         <node name="$(arg camera_name)_robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">

@@ -1,13 +1,27 @@
 <launch>
 
     <arg name="camera_name" default="d435i"/>
+	<arg name="color_width"         default="1280"/>
+	<arg name="color_height"        default="720"/>
 
     <!-- The gazebo-simulated realsense does not publish aligned_depth_to_color, so we do it manually-->
+    <!-- ISSUE: There seems to be an interpolation issue -->
     <node pkg="nodelet" type="nodelet" name="depth_registration_nodelet_manager" args="manager" />
+    <node pkg="nodelet" type="nodelet" name="depth_resize_nodelet"
+          args="load image_proc/resize depth_registration_nodelet_manager">
+        <remap from="camera_info" to="/$(arg camera_name)/depth/camera_info"/>
+        <remap from="image"       to="/$(arg camera_name)/depth/image_rect_raw"/>
+        <remap from="~camera_info"   to="/$(arg camera_name)/depth_resized/camera_info"/>
+        <remap from="~image"         to="/$(arg camera_name)/depth_resized/image_rect_raw"/>
+        
+        <param name="width" type="int" value="$(arg color_width)" />
+        <param name="height" type="int" value="$(arg color_height)" />
+        <param name="use_scale" type="bool" value="false" />
+    </node>
     <node pkg="nodelet" type="nodelet" name="depth_registration_nodelet"
           args="load depth_image_proc/register depth_registration_nodelet_manager">
-        <remap from="depth/camera_info" to="/$(arg camera_name)/depth/camera_info"/>
-        <remap from="depth/image_rect"  to="/$(arg camera_name)/depth/image_rect_raw"/>
+        <remap from="depth/camera_info" to="/$(arg camera_name)/depth_resized/camera_info"/>
+        <remap from="depth/image_rect"  to="/$(arg camera_name)/depth_resized/image_rect_raw"/>
         <remap from="rgb/camera_info"   to="/$(arg camera_name)/color/camera_info"/>
         <remap from="depth_registered/camera_info"  to="/$(arg camera_name)/aligned_depth_to_color/camera_info"/>
         <remap from="depth_registered/image_rect"   to="/$(arg camera_name)/aligned_depth_to_color/image_raw"/>
@@ -19,5 +33,6 @@
     <!-- Due to a gazebo bug the depth camera_info is not being published, so I do it manually (see https://github.com/ros-simulation/gazebo_ros_pkgs/pull/798)-->
     <node pkg="lr_realsense" type="depth_camera_info_publisher.py" name="depth_camera_info_publisher">
         <remap from="camera_info"   to="/$(arg camera_name)/depth/camera_info"/>
+        <param name="camera_name" value="$(arg camera_name)"/>
     </node>
 </launch>

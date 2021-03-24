@@ -5,6 +5,7 @@ import sensor_msgs.msg
 
 if __name__ == "__main__":
     rospy.init_node('depth_camera_info_publisher', anonymous=True, log_level=rospy.INFO)
+    camera_name = str(rospy.get_param("~camera_name"))
 
     pub = rospy.Publisher("camera_info", sensor_msgs.msg.CameraInfo, queue_size=1) 
 
@@ -12,7 +13,7 @@ if __name__ == "__main__":
     while not rospy.is_shutdown():
         msg = sensor_msgs.msg.CameraInfo()
         msg.header.stamp = rospy.Time.now()
-        msg.header.frame_id = "d435i_depth_optical_frame"
+        msg.header.frame_id = camera_name+"_depth_optical_frame"
         msg.height = 480
         msg.width = 848
         msg.distortion_model = 'plumb_bob'
