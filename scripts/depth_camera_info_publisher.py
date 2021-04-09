@@ -6,6 +6,11 @@ import sensor_msgs.msg
 if __name__ == "__main__":
     rospy.init_node('depth_camera_info_publisher', anonymous=True, log_level=rospy.INFO)
     camera_name = str(rospy.get_param("~camera_name"))
+    width = int(rospy.get_param("~width"))
+    height = int(rospy.get_param("~height"))
+
+    if width!=848 or height!=480:
+        raise NotImplementedError("Currently only 848x480 is supported. Received "+str(width)+"x"+str(height))
 
     pub = rospy.Publisher("camera_info", sensor_msgs.msg.CameraInfo, queue_size=1) 
 

@@ -147,7 +147,7 @@ The sensor is defiend as a xacro macro which you can use in xacro urdf files
                             <format>RGB_INT8</format>
                         </image>
                         <clip>
-                            <near>0.1</near>
+                            <near>0.02</near>
                             <far>100</far>
                         </clip>
                         <noise>
@@ -177,7 +177,7 @@ The sensor is defiend as a xacro macro which you can use in xacro urdf files
                             <format>L_INT8</format>
                         </image>
                         <clip>
-                            <near>0.1</near>
+                            <near>0.02</near>
                             <far>100</far>
                         </clip>
                         <noise>
@@ -208,7 +208,7 @@ The sensor is defiend as a xacro macro which you can use in xacro urdf files
                             <format>L_INT8</format>
                         </image>
                         <clip>
-                            <near>0.1</near>
+                            <near>0.02</near>
                             <far>100</far>
                         </clip>
                         <noise>
@@ -238,7 +238,7 @@ The sensor is defiend as a xacro macro which you can use in xacro urdf files
                             <format>R8G8B8</format>
                         </image>
                         <clip>
-                            <near>0.1</near>
+                            <near>0.02</near>
                             <far>10</far>
                         </clip>
                         <noise>
@@ -276,7 +276,7 @@ The sensor is defiend as a xacro macro which you can use in xacro urdf files
                                                (depth_width == 424  and depth_height==240)}">
                                 <intrinsics>
                                     <fx>${427.058 * depth_width/848}</fx>
-                                    <fy>${427.058 * depth_height/848}</fy>
+                                    <fy>${427.058 * depth_height/480}</fy>
                                     <cx>${427.102 * depth_width/848}</cx>
                                     <cy>${237.025 * depth_height/480}</cy>
                                     <s>0</s>
