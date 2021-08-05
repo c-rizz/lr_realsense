@@ -2,6 +2,10 @@
 
 These instructions assume you are in ROS noetic and ubuntu 20.04.
 
+The default installation seems to have problems with single camera setups, see the appropriate section.
+
+## Single camera setups
+
 To have this working you need to first of all install the ROS dependencies.
 
 ```
@@ -27,6 +31,15 @@ sudo udevadm trigger
 
 
 Now it should be working.
+
+
+## Multi-camera setups
+
+If you are using multiple cameras, it may be better to install the non-ROS version of librealsense, which uses a different usb backend.
+
+To do so you will need to set the appropriate PPA and install librealsense from apt. Then you will need to get realsense-ros from source,
+cloning it in your catkin workspace. Remember to remove the dependency in librealsense from realsense-ros package.xml, if you don't rosdep will install also the ros version of librealsense, breaking your installation.
+
 
 
 ## How to get librealsense tools

@@ -42,6 +42,7 @@
 	
 		<arg name="publish_tf"          value="$(arg publish_tf)"/>
 		<arg name="serial_no"           value="$(arg serial_no)"/>
+		<arg name="initial_reset"       value="true"/>
 	<!--
 		<arg name="enable_infra1"       default="true"/>
 		<arg name="enable_infra2"       default="true"/>
