@@ -138,7 +138,7 @@ The sensor is defiend as a xacro macro which you can use in xacro urdf files
             </xacro:if>
 
             <xacro:if value="${enable_color}">
-                <sensor name="${camera_name}_${color_camera}" type="camera">
+                <sensor name="${camera_name}/${color_camera}/image_raw" type="camera">
                     <camera name="${camera_name}">
                         <horizontal_fov>${69.4*deg_to_rad}</horizontal_fov>
                         <image>
