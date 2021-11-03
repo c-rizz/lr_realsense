@@ -8,11 +8,13 @@ if __name__ == "__main__":
     camera_name = str(rospy.get_param("~camera_name"))
     width = int(rospy.get_param("~width"))
     height = int(rospy.get_param("~height"))
+    camera_info_topic = rospy.get_param("~camera_info_topic")
 
     if width!=848 or height!=480:
         raise NotImplementedError("Currently only 848x480 is supported. Received "+str(width)+"x"+str(height))
 
-    pub = rospy.Publisher("camera_info", sensor_msgs.msg.CameraInfo, queue_size=1) 
+    rospy.loginfo("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------Will publish on "+camera_info_topic)
+    pub = rospy.Publisher(camera_info_topic, sensor_msgs.msg.CameraInfo, queue_size=1) 
 
     rate = rospy.Rate(60) # 60Hz    
     while not rospy.is_shutdown():
